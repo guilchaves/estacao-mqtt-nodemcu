@@ -18,8 +18,10 @@ Esse é o projeto final da matéria Objetos Inteligentes Conectados do curso de 
 - Arduino IDE
 - [HiveMQ (Broker)](http://www.hivemq.com/)
 
-##
+## Protótipo
 
-Guilherme Goncalves Chaves
+![modelo](https://i.postimg.cc/k4GvQMtp/fritzing.jpg)
+
+Guilherme Goncalves Chaves<br>
 TIA 20014481
 
