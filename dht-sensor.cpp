@@ -177,7 +177,7 @@ float read_humidity() {
 /*
  * Metodo para logar valor de umidade no Serial Monitor
  */
-char logHumidity(float humidity) {
+void logHumidity(float humidity) {
   Serial.print("Humidity: ");
   Serial.print(humidity);
   Serial.print("%");
@@ -186,7 +186,7 @@ char logHumidity(float humidity) {
 /*
  * Metodo para logar valor da temperatura no Serial Monitor
  */
-char logTemperature(float temperature) {
+void logTemperature(float temperature) {
   Serial.print("Temperature: ");
   Serial.print(temperature);
   Serial.print("°C");
