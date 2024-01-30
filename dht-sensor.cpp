@@ -1,23 +1,7 @@
-/*
- * Estacao Metereologica MQTT
- * Autor: Guilherme Chaves | TIA: 20014481
- */
-
-
-/*
- * Carrega bibliotecas
- */
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 #include <LiquidCrystal_I2C.h>
 #include <DHT.h>
-
-/*
- * DHTPin recebe o pino conectado ao DHT;
- * DHTType recebe o modelo do sensor utilizado;
- * dht instancia objeto DHT;
- * lcd instancia objeto LiquidCrystal_I2Cl 
- */
 
 #define DHTPin D5
 #define DHTType DHT22
@@ -25,20 +9,14 @@
 DHT dht = DHT(DHTPin, DHTType);
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 
-/*
- * @ssid recebe SSID da rede a ser conectada;
- * @password recebe senha da rede a ser conectada;
- * @mqtt_server recebe endereco de broker utilizado;
- * @mqtt_port recebe a porta do broker utilizado;
- */
 const char* ssid = "";
 const char* password = "";
 const char* mqtt_server = "broker.mqtt-dashboard.com";
 const int mqtt_port = 1883;
 
-#define MSG_BUFFER_SIZE (500) //define buffer size para 500;
-WiFiClient client; //inicializa client wifi;
-PubSubClient mqtt_client(client); //gera objeto mqtt_client que ira se comunicar com broker mqtt;
+#define MSG_BUFFER_SIZE (500) 
+WiFiClient client; 
+PubSubClient mqtt_client(client); 
 long lastMsg = 0;
 
 String clientID = "ESP8266Client-";
@@ -47,14 +25,12 @@ String topicPrefix = "MACK20014481";
 String topicAll = topicPrefix + "/#";
 String topic_0 = topicPrefix + "/hello";
 String message_0 = "NodeMCU Connected!";
-String topic_2 = topicPrefix + "/sensor2"; //recebe mensagem para ligar/desligar a luz de fundo do Display LCD;
+String topic_2 = topicPrefix + "/sensor2"; 
 String message_2 = "";
-String topic_3 = topicPrefix + "/sensor3"; // indica temperatura;
-String topic_4 = topicPrefix + "/sensor4"; // indica umidade;
+String topic_3 = topicPrefix + "/sensor3";
+String topic_4 = topicPrefix + "/sensor4";
 String msg = "";
 
-
-//cria o simbolo de grau para ser impresso no display;
 byte degree[8] = { B00001100,
                    B00010010,
                    B00010010,
@@ -65,10 +41,6 @@ byte degree[8] = { B00001100,
                    B00000000,
                  };
 
-
-/*
- * Metodo para iniciar conexao com rede Wi-fi;
- */
  
 void setup_wifi() {
   WiFi.begin(ssid, password);
@@ -85,9 +57,6 @@ void setup_wifi() {
   Serial.println(WiFi.localIP());
 }
 
-/*
- * Metodo para receber mensagem payload e imprimir no Serial Monitor;
- */
 void callback(char* topic, byte* payload, unsigned int length) {
   msg = "";
   Serial.print("Message arrived [");
@@ -106,38 +75,26 @@ void callback(char* topic, byte* payload, unsigned int length) {
 
 }
 
-/*
- * Metodo para reconectar ao broker caso a conexão seja perdida;
- */
 void reconnect() {
-  // Loop until we’re reconnected
   while (!mqtt_client.connected()) {
     Serial.print("Attempting MQTT connection…");
 
-    // Create a random client ID
-    randomSeed(micros()); //inicializa a semente do gerador de numeros aleatorios
+    randomSeed(micros());
     clientID += String(random(0xffff), HEX);
 
-    // Attempt to connect
     if (mqtt_client.connect(clientID.c_str())) {
       Serial.println("connected");
-      // Once connected, publish an announcement...
       mqtt_client.publish(topic_0.c_str(), message_0.c_str());
-      // ... and resubscribe
       mqtt_client.subscribe(topicAll.c_str());
     } else {
       Serial.print("failed, rc=");
       Serial.print(mqtt_client.state());
       Serial.println(" try again in 5 seconds");
-      // Wait 5 seconds before retrying
       delay(5000);
     }
   }
 }
 
-/*
- * Metodo que recebe mensagem para o topico 2 e ativa ou desliga a luz de fundo do Display;
- */
 void checkTopicTwoMsg(String message){
   if (message.toInt() == 1) {
     lcd.noBacklight();
@@ -146,9 +103,6 @@ void checkTopicTwoMsg(String message){
   }
 }
 
-/*
- * Metodo que le a temperatura via DHT22;
- */
 float read_temperature() {
   float temperature = dht.readTemperature();
   float result;
@@ -160,9 +114,6 @@ float read_temperature() {
   return result;
 }
 
-/*
- * Metodo que lê umidade via DHT22
- */
 float read_humidity() {
   float humidity = dht.readHumidity();
   float result;
@@ -174,27 +125,18 @@ float read_humidity() {
   return result;
 }
 
-/*
- * Metodo para logar valor de umidade no Serial Monitor
- */
 void logHumidity(float humidity) {
   Serial.print("Humidity: ");
   Serial.print(humidity);
   Serial.print("%");
 }
 
-/*
- * Metodo para logar valor da temperatura no Serial Monitor
- */
 void logTemperature(float temperature) {
   Serial.print("Temperature: ");
   Serial.print(temperature);
   Serial.print("°C");
 }
 
-/*
- * Metodo para imprimir no display a temperatura na linha 1
- */
 void printTemperature(float temperature) {
   lcd.setCursor(0, 0);
   lcd.print("Temp : ");
@@ -204,9 +146,6 @@ void printTemperature(float temperature) {
   lcd.print("C");
 }
 
-/*
- * Metodo para imprimir no display a umidade na linha 2
- */
 void printHumidity(float humidity) {
   lcd.setCursor(0, 1);
   lcd.print("Umid : ");
@@ -214,12 +153,6 @@ void printHumidity(float humidity) {
   lcd.print(" %");
 }
 
-/*
- * Metodo setup com inicialização do dispositivo;
- * 
- * @lcd.createChar gera o simbolo de grau da variavel degree
- * @lcd.backlight liga a luz de fundo do display
- */
 void setup() {
   Serial.begin(9600);
   lcd.init();
@@ -233,9 +166,6 @@ void setup() {
   mqtt_client.setCallback(callback);
 }
 
-/*
- * Metodo loop onde leituras de umidade e temperatura são realizadas e publicadas no broker
- */
 void loop() {
   if (!mqtt_client.connected()) {
     reconnect();
@@ -251,7 +181,6 @@ void loop() {
     Serial.println("Error reading temperature and humidity.");
     return;
   }
-
 
   Serial.println();
 
